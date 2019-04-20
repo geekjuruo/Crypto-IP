@@ -125,9 +125,9 @@ int main() {
     pkt_offset = 24; //pcap文件头结构 24个字节
     while(fseek(fp, pkt_offset, SEEK_SET) == 0) {//遍历数据包
         i++;
-        if(i == 10) {
-            break;
-        }
+        // if(i == 10) {
+        //     break;
+        // }
         //pcap_pkt_header 16 byte
         if(fread(ptk_header, 16, 1, fp) != 1) { //读pcap数据包头结构
             printf("\nread end of pcap file\n");
@@ -182,10 +182,10 @@ int main() {
         u_int32 DstIp = (ip_header->DstIP[3]<<24) + (ip_header->DstIP[2]<<16) + (ip_header->DstIP[1]<<8) + ip_header->DstIP[0];
         inet_ntop(AF_INET, (void *)&(SrcIp), src_ip, 16);
         inet_ntop(AF_INET, (void *)&(DstIp), dst_ip, 16);
-        ip_proto = ip_header->Protocol;
-        ip_len = ip_header->TotalLen; //IP数据报总长度
-        printf("%d:  src=%s\n", i, src_ip);
-        printf("%d:  dst=%s\n", i, dst_ip);
+        // ip_proto = ip_header->Protocol;
+        // ip_len = ip_header->TotalLen; //IP数据报总长度
+        printf("%d:  src=%s -> dst = %s \n", i, src_ip, dst_ip);
+        // printf("%d:  dst=%s\n", i, dst_ip);
         
         if(ip_proto != 0x06) {//判断是否是 TCP 协议
             continue;
