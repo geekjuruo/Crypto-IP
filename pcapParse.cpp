@@ -1,21 +1,19 @@
-// gcc -std=c11 pcapParse.c -o main.o
+// Package: Crypto-PAn 1.0
+// File: sample.cpp
+// Last Update: April 17, 2002
+// Author: Jinliang Fan
 
+#include <stdlib.h>
+#include <stdio.h>
 #include<stdio.h>
-
 #include<string.h>
-
 #include<stdlib.h>
-
 #include<netinet/in.h>
-
 #include<arpa/inet.h>
-
 #include<time.h>
-
 #include <fcntl.h> // for open
-
 #include <unistd.h> // for close
-
+// #include "panonymizer.h"
 
 #define BUFSIZE 10240
 #define STRSIZE 1024
@@ -86,11 +84,52 @@ typedef struct TCPHeader_t { //TCP数据报头
     u_int16 UrgentPointer;  //紧急指针
 }TCPHeader_t;
 
-//
-void match_http(FILE *fp, char *head_str, char *tail_str, char *buf, int total_len); //查找 http 信息函数
-//
 
-int main() {
+int main(int argc, char * argv[]) {
+    // Provide your own 256-bit key here
+    unsigned char my_key[32] = 
+    {21,34,23,141,51,164,207,128,19,10,91,22,73,144,125,16,
+     216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
+
+    FILE * f;
+    unsigned int raw_addr, anonymized_addr;
+
+    // Create an instance of PAnonymizer with the key
+    // PAnonymizer my_anonymizer(my_key);
+
+    float packet_time;
+    unsigned int packet_size, packet_addr1, packet_addr2, packet_addr3, packet_addr4;
+
+    // if (argc != 2) {
+    //   fprintf(stderr, "usage: sample raw-trace-file\n");
+    //   exit(-1);
+    // }
+    
+    // if ((f = fopen(argv[1],"r")) == NULL) {
+    //   fprintf(stderr,"Cannot open file %s\n", argv[1]);
+    //   exit(-2);
+    // }
+       
+    //readin and handle each line of the input file
+    // while  (fscanf(f, "%u.%u.%u.%u", &packet_addr1, &packet_addr2, &packet_addr3, &packet_addr4) != EOF) {
+    //   // fscanf(f, "%u", &packet_size);
+    //   // fscanf(f, "%u.%u.%u.%u", &packet_addr1, &packet_addr2, &packet_addr3, &packet_addr4);
+
+    //   //convert the raw IP from a.b.c.d format into unsigned int format.
+    //   raw_addr = (packet_addr1 << 24) + (packet_addr2 << 16) + (packet_addr3 << 8) + packet_addr4;
+
+    //   //Anonymize the raw IP
+    //   anonymized_addr = my_anonymizer.anonymize(raw_addr);
+
+    //   //convert the anonymized IP from unsigned int format to a.b.c.d format
+    //   packet_addr1 = anonymized_addr >> 24;
+    //   packet_addr2 = (anonymized_addr << 8) >> 24;
+    //   packet_addr3 = (anonymized_addr << 16) >> 24;
+    //   packet_addr4 = (anonymized_addr << 24) >> 24;
+
+    //   //output the sanitized trace
+    //   printf("%6f\t%u\t%u.%u.%u.%u\n",  packet_time, packet_size, packet_addr1, packet_addr2, packet_addr3, packet_addr4 );
+    // }
     struct pcap_file_header *file_header;
     pcap_pkthdr *ptk_header;
     IPHeader_t *ip_header;
@@ -108,6 +147,8 @@ int main() {
     ip_header = (IPHeader_t *)malloc(sizeof(IPHeader_t));
     tcp_header = (TCPHeader_t *)malloc(sizeof(TCPHeader_t));
     memset(buf, 0, sizeof(buf));
+
+
     //
     if((fp = fopen("test.pcap","r")) == NULL) {
         printf("error: can not open pcap file\n");
@@ -179,9 +220,9 @@ int main() {
         // printf("DstIP:%02x\n", ip_header->DstIP[2]);
         // printf("DstIP:%02x\n", ip_header->DstIP[3]);
 
-        u_int32 SrcIp = (ip_header->SrcIP[3]<<24) + (ip_header->SrcIP[2]<<16) + (ip_header->SrcIP[1]<<8) + ip_header->SrcIP[0];
+        unsigned int SrcIp = (ip_header->SrcIP[3]<<24) + (ip_header->SrcIP[2]<<16) + (ip_header->SrcIP[1]<<8) + ip_header->SrcIP[0];
         //printf("SrcIP:%08x\n", SrcIp); 
-        u_int32 DstIp = (ip_header->DstIP[3]<<24) + (ip_header->DstIP[2]<<16) + (ip_header->DstIP[1]<<8) + ip_header->DstIP[0];
+        unsigned int DstIp = (ip_header->DstIP[3]<<24) + (ip_header->DstIP[2]<<16) + (ip_header->DstIP[1]<<8) + ip_header->DstIP[0];
         inet_ntop(AF_INET, (void *)&(SrcIp), src_ip, 16);
         inet_ntop(AF_INET, (void *)&(DstIp), dst_ip, 16);
         // ip_proto = ip_header->Protocol;
@@ -189,89 +230,37 @@ int main() {
         printf("%d:  src=%s -> dst = %s \n", i, src_ip, dst_ip);
         // printf("%d:  dst=%s\n", i, dst_ip);
         
-        if(ip_proto != 0x06) {//判断是否是 TCP 协议
-            continue;
-        }
-        //TCP头 20字节
-        if(fread(tcp_header, sizeof(TCPHeader_t), 1, fp) != 1) {
-            printf("%d: can not read ip_header\n", i);
-            break;
-        }
-        src_port = ntohs(tcp_header->SrcPort);
-        dst_port = ntohs(tcp_header->DstPort);
-        tcp_flags = tcp_header->Flags;
-        // printf("%d:  src=%x\n", i, tcp_flags);
-        if(tcp_flags == 0x18) {// (PSH, ACK) 3路握手成功后
-            if(dst_port == 80) {// HTTP GET请求
-                http_len = ip_len - 40; //http 报文长度
-                match_http(fp, "Host: ", "\r\n", host, http_len); //查找 host 值
-                match_http(fp, "GET ", "HTTP", uri, http_len); //查找 uri 值
-                sprintf(buf, "%d:  %s  src=%s:%d  dst=%s:%d  %s%s\r\n", i, my_time, src_ip, src_port, dst_ip, dst_port, host, uri);
-                //printf("%s", buf);
-                if(fwrite(buf, strlen(buf), 1, output) != 1) {
-                printf("output file can not write");
-                break;
-                }
-            }
-        }
+        //Anonymize the raw IP
+        //anonymized_src_addr = my_anonymizer.anonymize(SrcIp);
+        //anonymized_src_addr = my_anonymizer.anonymize(DstIp);
+        // if(ip_proto != 0x06) {//判断是否是 TCP 协议
+        //     continue;
+        // }
+        // //TCP头 20字节
+        // if(fread(tcp_header, sizeof(TCPHeader_t), 1, fp) != 1) {
+        //     printf("%d: can not read ip_header\n", i);
+        //     break;
+        // }
+        // src_port = ntohs(tcp_header->SrcPort);
+        // dst_port = ntohs(tcp_header->DstPort);
+        // tcp_flags = tcp_header->Flags;
+        // // printf("%d:  src=%x\n", i, tcp_flags);
+        // if(tcp_flags == 0x18) {// (PSH, ACK) 3路握手成功后
+        //     if(dst_port == 80) {// HTTP GET请求
+        //         http_len = ip_len - 40; //http 报文长度
+        //         match_http(fp, "Host: ", "\r\n", host, http_len); //查找 host 值
+        //         match_http(fp, "GET ", "HTTP", uri, http_len); //查找 uri 值
+        //         sprintf(buf, "%d:  %s  src=%s:%d  dst=%s:%d  %s%s\r\n", i, my_time, src_ip, src_port, dst_ip, dst_port, host, uri);
+        //         //printf("%s", buf);
+        //         if(fwrite(buf, strlen(buf), 1, output) != 1) {
+        //         printf("output file can not write");
+        //         break;
+        //         }
+        //     }
+        // }
 } // end while
     fclose(fp);
     fclose(output);
     return 0;
-}
 
-//查找 HTTP 信息
-
-void match_http(FILE *fp, char *head_str, char *tail_str, char *buf, int total_len) {
-    int i;
-    int http_offset;
-    int head_len, tail_len, val_len;
-    char head_tmp[STRSIZE], tail_tmp[STRSIZE];
-//初始化
-    memset(head_tmp, 0, sizeof(head_tmp));
-    memset(tail_tmp, 0, sizeof(tail_tmp));
-    head_len = strlen(head_str);
-    tail_len = strlen(tail_str);
-//查找 head_str
-http_offset = ftell(fp); //记录下HTTP报文初始文件偏移
-while((head_tmp[0] = fgetc(fp)) != EOF){ //逐个字节遍历
-    if((ftell(fp) - http_offset) > total_len) {//遍历完成
-        sprintf(buf, "can not find %s \r\n", head_str);
-        exit(0);
-    }
-
-    if(head_tmp[0] == *head_str) {//匹配到第一个字符
-        for(i=1; i<head_len; i++) {//匹配 head_str 的其他字符
-            head_tmp[i]=fgetc(fp);
-            if(head_tmp[i] != *(head_str+i))
-            break;
-        }
-        if(i == head_len) //匹配 head_str 成功，停止遍历
-            break;
-    }
-}
-// printf("head_tmp=%s \n", head_tmp);
-//查找 tail_str
-val_len = 0;
-while((tail_tmp[0] = fgetc(fp)) != EOF) {//遍历
-    if((ftell(fp) - http_offset) > total_len) {//遍历完成
-        sprintf(buf, "can not find %s \r\n", tail_str);
-        exit(0);
-    }
-    buf[val_len++] = tail_tmp[0]; //用buf 存储 value 直到查找到 tail_str
-    if(tail_tmp[0] == *tail_str) {//匹配到第一个字符
-        for(i=1; i<tail_len; i++) {//匹配 head_str 的其他字符
-            tail_tmp[i]=fgetc(fp);
-            if(tail_tmp[i] != *(tail_str+i))
-                break;
-        }
-
-        if(i == tail_len) {//匹配 head_str 成功，停止遍历
-            buf[val_len-1] = 0; //清除多余的一个字符
-            break;
-        }
-    }
-}
-printf("val=%s\n", buf);
-fseek(fp, http_offset, SEEK_SET); //将文件指针 回到初始偏移
 }
