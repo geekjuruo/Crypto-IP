@@ -85,28 +85,31 @@ typedef struct in6_addr {
 
 typedef struct tagIPv6Header_t
 {
-    union
-    {
-        struct ip6_hdrctl
-        {
-            u_int32_t ip6_unl_flow;/* 4位的版本，8位的传输与分类，20位的流标识符 */
-            u_int16_t ip6_unl_plen;/* 报头长度 */
-            u_int8_t ip6_unl_nxt;  /* 下一个报头 */
-            u_int8_t ip6_unl_hlim; /* 跨度限制 */
-        }ip6_unl ;
+//     union
+//     {
+//         struct ip6_hdrctl
+//         {
+//             u_int32_t ip6_unl_flow;/* 4位的版本，8位的传输与分类，20位的流标识符 */
+//             u_int16_t ip6_unl_plen;/* 报头长度 */
+//             u_int8_t ip6_unl_nxt;  /* 下一个报头 */
+//             u_int8_t ip6_unl_hlim; /* 跨度限制 */
+//         }ip6_unl ;
 
-        u_int8_t ip6_un2_vfc;/* 4位的版本号，跨度为4位的传输分类 */
-    }ip6_ctlun ;
+//         u_int8_t ip6_un2_vfc;/* 4位的版本号，跨度为4位的传输分类 */
+//     }ip6_ctlun ;
 
-#define ip6_vfc              ip6_ctlun.ip6_un2_vfc
-#define ip6_flow             ip6_ctlun.ip6_unl.ip6_unl_flow
-#define ip6_plen             ip6_ctlun.ip6_unl.ip6_unl_plen
-#define ip6_nxt              ip6_ctlun.ip6_unl.ip6_unl_nxt
-#define ip6_hlim             ip6_ctlun.ip6_unl.ip6_unl_hlim
-#define ip6_hops             ip6_ctlun.ip6_unl.ip6_unl_hops
+// #define ip6_vfc              ip6_ctlun.ip6_un2_vfc
+// #define ip6_flow             ip6_ctlun.ip6_unl.ip6_unl_flow
+// #define ip6_plen             ip6_ctlun.ip6_unl.ip6_unl_plen
+// #define ip6_nxt              ip6_ctlun.ip6_unl.ip6_unl_nxt
+// #define ip6_hlim             ip6_ctlun.ip6_unl.ip6_unl_hlim
+// #define ip6_hops             ip6_ctlun.ip6_unl.ip6_unl_hops
 
-    struct in6_addr ip6_src;/* 发送端地址 */
-    struct in6_addr ip6_dst;/* 接收端地址 */
+    u_int32_t unuseful[2]; 
+    u_int8_t src[16];
+    u_int8_t dst[16];
+    // struct in6_addr ip6_src;/* 发送端地址 */
+    // struct in6_addr ip6_dst;/* 接收端地址 */
 }IPv6Header_t;
 
 //TCP数据报头

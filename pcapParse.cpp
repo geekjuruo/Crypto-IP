@@ -150,7 +150,7 @@ int main(int argc, char * argv[]) {
 
 
     //
-    if((fp = fopen("testipv6.pcap","r")) == NULL) {
+    if((fp = fopen("bigipv4.pcap","r")) == NULL) {
         printf("error: can not open pcap file\n");
         exit(0);
     } else {
