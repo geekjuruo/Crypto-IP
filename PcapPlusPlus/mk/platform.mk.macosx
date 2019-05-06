@@ -21,6 +21,3 @@ MKDIR := mkdir
 INSTALL_SCRIPT := install.sh
 
 UNINSTALL_SCRIPT := uninstall.sh
-
-
-PCAPPLUSPLUS_HOME := /Users/liyinghui/Desktop/Crypto-IP/PcapPlusPlus
