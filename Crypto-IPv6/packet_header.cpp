@@ -36,29 +36,29 @@ void parse_ethII(u_char* pData, u_int32 len)
         return;
     }
 
-    printf("eth II frame: \r\n");
-    print_buf(pData, 14);
+    // printf("eth II frame: \r\n");
+    // print_buf(pData, 14);
 
     /* parse src mac and dst mac */
     EthHeader_t* pEth = (EthHeader_t*)pData;
-    printf("destination: %02x:%02x:%02x:%02x:%02x:%02x ",
-        pEth->dest_hwaddr[0],
-        pEth->dest_hwaddr[1],
-        pEth->dest_hwaddr[2],
-        pEth->dest_hwaddr[3],
-        pEth->dest_hwaddr[4],
-        pEth->dest_hwaddr[5]);
+    // printf("destination: %02x:%02x:%02x:%02x:%02x:%02x ",
+    //     pEth->dest_hwaddr[0],
+    //     pEth->dest_hwaddr[1],
+    //     pEth->dest_hwaddr[2],
+    //     pEth->dest_hwaddr[3],
+    //     pEth->dest_hwaddr[4],
+    //     pEth->dest_hwaddr[5]);
 
-    printf("source : %02x:%02x:%02x:%02x:%02x:%02x",
-        pEth->source_hwaddr[0],
-        pEth->source_hwaddr[1],
-        pEth->source_hwaddr[2],
-        pEth->source_hwaddr[3],
-        pEth->source_hwaddr[4],
-        pEth->source_hwaddr[5]);
+    // printf("source : %02x:%02x:%02x:%02x:%02x:%02x",
+    //     pEth->source_hwaddr[0],
+    //     pEth->source_hwaddr[1],
+    //     pEth->source_hwaddr[2],
+    //     pEth->source_hwaddr[3],
+    //     pEth->source_hwaddr[4],
+    //     pEth->source_hwaddr[5]);
 
     /* parse frame type */
-    printf("\r\nframe type: 0x%x\r\n", ntohs(pEth->frame_type));
+    // printf("\r\nframe type: 0x%x\r\n", ntohs(pEth->frame_type));
 }
 
 
@@ -103,8 +103,8 @@ void parse_ip6header(u_char* pData, u_int32 len)
         return;
     }
 
-    printf("ipv6 header: \r\n");
-    print_buf(pData, 40);
+    // printf("ipv6 header: \r\n");
+    // print_buf(pData, 40);
 
     /* parse ipv6 header */
     IPv6Header_t* pIpv6Header = (IPv6Header_t*)pData;
@@ -126,16 +126,17 @@ void parse_ip6header(u_char* pData, u_int32 len)
     //        pIpv6Header->ip6_dst);
     // printf("unuseful1: %02x\r\n", pIpv6Header->unuseful[0]);
     // printf("unuseful2: %02x\r\n", pIpv6Header->unuseful[1]);
-    for (int i = 0; i < 16; i++) {
-        printf("src%d: %02x\r\n", i,pIpv6Header->src[i]);
-    }
+    // for (int i = 0; i < 16; i++) {
+    //     printf("src%d: %02x\r\n", i,pIpv6Header->src[i]);
+    // }
+    printf("src:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x\n", pIpv6Header->src[0],pIpv6Header->src[1],pIpv6Header->src[2],pIpv6Header->src[3],pIpv6Header->src[4],pIpv6Header->src[5],pIpv6Header->src[6],pIpv6Header->src[7],pIpv6Header->src[8],pIpv6Header->src[9],pIpv6Header->src[10],pIpv6Header->src[11],pIpv6Header->src[12],pIpv6Header->src[13],pIpv6Header->src[14],pIpv6Header->src[15]);
     // printf("src: %x\r\n", pIpv6Header->src[1]);
     // printf("src: %x\r\n", pIpv6Header->src[2]);
     // printf("src: %x\r\n", pIpv6Header->src[3]);
-    for (int i = 0; i < 16; i++) {
-        printf("dst%d: %02x\r\n", i,pIpv6Header->dst[i]);
-    }
-
+    // for (int i = 0; i < 16; i++) {
+    //     printf("dst%d: %02x\r\n", i,pIpv6Header->dst[i]);
+    // }
+    printf("dst:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x\n", pIpv6Header->dst[0],pIpv6Header->dst[1],pIpv6Header->dst[2],pIpv6Header->dst[3],pIpv6Header->dst[4],pIpv6Header->dst[5],pIpv6Header->dst[6],pIpv6Header->dst[7],pIpv6Header->dst[8],pIpv6Header->dst[9],pIpv6Header->dst[10],pIpv6Header->dst[11],pIpv6Header->dst[12],pIpv6Header->dst[13],pIpv6Header->dst[14],pIpv6Header->dst[15]);
 }
 
 
@@ -176,10 +177,10 @@ void processPacket(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *
 
     printf("--------------------------------------------\r\n");
     printf("Packet Count: %d\n", ++(*counter));
-    printf("Received Packet Size: %d\n", pkthdr->len);
-    printf("Payload:\n");
+    // printf("Received Packet Size: %d\n", pkthdr->len);
+    // printf("Payload:\n");
 
-#if 1
+#if 0
     for (i = 0; i < pkthdr->len; i++)
     {
         if (isprint(packet[i]))
